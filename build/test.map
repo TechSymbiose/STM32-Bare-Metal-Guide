@@ -340,10 +340,10 @@ LOAD linker stubs
  .debug_macro   0x000000000000220a    0x18b93 build/./core/src/gpio.o
  .debug_macro   0x000000000001ad9d       0x6d build/./core/src/gpio.o
 
-.debug_line     0x0000000000000000      0x37d
+.debug_line     0x0000000000000000      0x373
  .debug_line    0x0000000000000000       0x80 build/./core/src/main.o
- .debug_line    0x0000000000000080      0x1c5 build/./core/src/gpio.o
- .debug_line    0x0000000000000245      0x138 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard/libc.a(lib_a-init.o)
+ .debug_line    0x0000000000000080      0x1bb build/./core/src/gpio.o
+ .debug_line    0x000000000000023b      0x138 /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard/libc.a(lib_a-init.o)
 
 .debug_str      0x0000000000000000    0x9df99
  .debug_str     0x0000000000000000     0x3139 build/./core/src/main.o
