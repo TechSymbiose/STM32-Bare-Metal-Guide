@@ -158,13 +158,14 @@ Why do we need to do this ? In the startup file, a SystemInit function is called
 
 The first thing we need to do is to tell the linker the lenght of both the FLASH and the RAM memory. Indeed, every STM32 have the same address for both FLASH and RAM but the size may change.
 
-You can find FLASH and RAM length in the STM32 datasheet. In the contents, find Embedded Flash Memory and Embedded SRAM, points 3.4 and 3.5 :
+You can find FLASH and RAM length in the STM32 datasheet. In the contents, in the *Functional overview* (section 3) find Embedded Flash Memory and Embedded SRAM (sections 3.4 and 3.5) :
 
-<!-- Add photo of the contents -->
+![Functional overview](./images/functional_overview.png)
 
 Then, go to each section to get the information
 
-<!-- Add photo of FLASH and RAM -->
+![Embedded Flash Memory](./images/embedded_flash_memory.png)
+![Embedded Ram Memory](./images/embedded_sram.png)
 
 As you can see, the STM32G474RE has 512Kbytes of FLASH and 128Kbytes of SRAM.
 
@@ -208,7 +209,7 @@ Are you ready ! Let's do it !
 
 The first thing we need to do is to find the pin the built-in LED is attached to. Open the Nucleo STM32 user manual. Find the mention of the `USER LED` with the corresponding pin :
 
-<!-- Add photo of the USER LED --> 
+![USER LED](./images/user_led.png)
 
 As you can see above, the LED we are looking for is `LD2 USER` connected to PA5, that is to say GPIOA (port A), pin 5.
 
@@ -216,13 +217,13 @@ As you can see above, the LED we are looking for is `LD2 USER` connected to PA5,
 
 In order to activate GPIOA, you need to enable GPIOA from the RCC (Reset and Clock Controller).
 
-Switch to the STM32 reference manual and look for *Memory map and register boundary addresses* (2.2.2)
+Switch to the STM32 reference manual and look for *Memory map and register boundary addresses* (section 2.2.2)
 
-<!-- Add 2.2.2. Memory map and register boundary addresses -->
+![Memory map](./images/memory_map.png)
 
-Scroll until you see the memory map and peripheral register boundary addresses table and look for the GPIOA line.
+Scroll until you see the *Memory map and peripheral register boundary addresses* table and look for the GPIOA line.
 
-<!-- Add memory map and peripheral register boundary addresses table -->
+![Memory map table](./images/memory_map_table.png)
 
 As you can see, the GPIOA is related to the AHB2 bus.
 
@@ -237,7 +238,8 @@ RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN ;
 Again, it is a story of register ! The register for GPIO Mode is named `MODER`.
 We need to reset the value of the pin 5 of the GPIOA and write the value of the `OUTPUT mode` without changing any other values in order not to affect other pins (using a not and operation followed with a or operation). We can find this value in the reference manual. Go to the *General-purpose I/Os (GPIO)* section, *GPIO registers* section, *GPIO port mode register (GPIOx_MODER)* (9.4.1).
 
-<!-- Add GPIO Moder image -->
+![GPIO Registers](./images/gpio_registers.png)
+![GPIO port mode register](./images/gpio_port_mode_register.png)
 
 From this section we learn that `General purpose output mode` value is 01 (1).
 
