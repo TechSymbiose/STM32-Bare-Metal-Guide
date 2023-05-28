@@ -55,7 +55,7 @@ LOAD /usr/lib/gcc/arm-none-eabi/12.2.1/thumb/v7e-m+fp/hard/libgcc.a
 LOAD /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard/libc.a
 LOAD /usr/lib/gcc/arm-none-eabi/12.2.1/../../../arm-none-eabi/lib/thumb/v7e-m+fp/hard/libnosys.a
 END GROUP
-                0x0000000020020000                _estack = 0x20020000
+                0x0000000020020000                _estack = (ORIGIN (RAM) + LENGTH (RAM))
 
 .vector_table   0x0000000008000000      0x1d8
                 0x0000000008000000                . = ALIGN (0x4)

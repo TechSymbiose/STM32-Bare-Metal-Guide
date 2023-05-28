@@ -4,7 +4,7 @@
 
 int main(void) {
 
-  gpioTogglePin() ;
+  gpioToggleLed() ;
 
   return 0;
 }

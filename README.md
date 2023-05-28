@@ -16,11 +16,18 @@ Welcome to a simple and complete generic STM32 Bare Metal Programming Tutorial !
 		1. [Source code](#source-code)
 		1. [Makefile](#makefile)
 1. [Organize our work](#organize-our-work)
-	1. [My rules](#my-rules)
 	1. [Create the project](#create-the-project)
 1. [Configuration and programming](#configuration-and-programming)
-	1. [Configure your linke script](#configure-your-linke-script)
-1. [Bonus - Understand the makefile](#bonus---understand-the-makefile)
+	1. [Configure your linker script](#configure-your-linker-script)
+	1. [A little programming](#a-little-programming)
+		1. [Find the built-in LED pin](#find-the-built-in-led-pin)
+		1. [Active the GPIO](#active-the-gpio)
+		1. [Turn pin to OUTPUT mode](#turn-pin-to-output-mode)
+		1. [Set the built-in LED pin](#set-the-built-in-led-pin)
+		1. [Adding a delay](#adding-a-delay)
+1. [Final step : compile and flash](#final-step--compile-and-flash)
+1. [Bonus 1 - Understand the makefile](#bonus-1---understand-the-makefile)
+1. [Bonus 2 - My rules](#bonus-2---my-rules)
 
 <!-- /MarkdownTOC -->
 
@@ -57,6 +64,11 @@ sudo apt-get install gcc-arm-none-eabi
 sudo apt-get install gdb-arm-none-eabi
 ```
 
+- stlink-tools : open your terminal and run the following command
+
+```
+sudo apt-get install stlink-tools
+```
 
 ## Files
 
@@ -116,9 +128,195 @@ Now that you've got everything you need, let's turn it interesting...
 
 # Organize our work
 
-To make it work in the first hand, we need to create a new project (a simple folder) and store everything in the right space. Indeed I created and respected a few rules to stay organized but feel free to respect it to the letter, change ome rules or make your own rules ! However, if you want to create your own rules, be sure to understand how to create a makefile.
+To make it work in the first hand, we need to create a new project (a simple folder) and store everything in the right space. Indeed I created and respected a few rules to stay organized but feel free to respect it to the letter, change ome rules or make your own rules ! However, if you want to create your own rules, be sure to understand how to create a makefile. To better understand the choice behind the project tree and the code you can read my [rules](#bonus-2---my-rules).
 
-## My rules
+## Create the project
+
+Create a folder where you want with the name of your choice. Put inside the makefile, create a 'core' named folder and put somewhere inside the header, startup and linker files (in accordance with my rules if you want to follow them).
+
+To complete the project tree with the bare minimum, add both main.h file and main.c files inside the core folder. For this tutorial, I also added a `gpio.h` and `gpio.c` in the `core` folder. However, you can keep only the 'main' files if you prefer and write all the code there.
+
+In the main.h file, add the following line :
+
+```
+extern "C" void SystemInit() ;
+```
+
+And in main.c file, add the following line :
+
+```
+extern "C" void SystemInit()
+{  
+}
+```
+
+Why do we need to do this ? In the startup file, a SystemInit function is called and stands for the clock initialization function initially defined somewhere in a ST library. However, we don't use this library as the goal of bare metal programming is to implements things by ourselves. However we still need to define this function, even though it doesn't do anything.
+
+# Configuration and programming
+
+## Configure your linker script
+
+The first thing we need to do is to tell the linker the lenght of both the FLASH and the RAM memory. Indeed, every STM32 have the same address for both FLASH and RAM but the size may change.
+
+You can find FLASH and RAM length in the STM32 datasheet. In the contents, find Embedded Flash Memory and Embedded SRAM, points 3.4 and 3.5 :
+
+<!-- Add photo of the contents -->
+
+Then, go to each section to get the information
+
+<!-- Add photo of FLASH and RAM -->
+
+As you can see, the STM32G474RE has 512Kbytes of FLASH and 128Kbytes of SRAM.
+
+The next step is to write these information in the linker script. At the beginning of the file, inside the `MEMORY` bloc, replace the length value of both FLASH and RAM by the correct one :
+
+```
+/* end of stack, 128K RAM */
+_estack = ORIGIN(RAM) + LENGTH(RAM) ;
+
+MEMORY
+{
+   FLASH ( rx )      : ORIGIN = 0x08000000, LENGTH = 512K
+   RAM ( rxw )       : ORIGIN = 0x20000000, LENGTH = 128K
+}
+```
+
+The end of stack will then be automatically calculated. That's all. Magic !
+
+## A little programming
+
+Here we (finally) are ! Let's write the code we will put on the board !
+
+To keep things simple, let's write a code whose aim is to make the built-in LED toggle (each Nucleo STM32 board has a built-in LED connected to a pin). Let's use it thus we don't need additionnal components and we will be able to see what we do.
+
+Everything in an STM32 is essentially a matter of registers. What we are looking for is to toggle a pin in the board, that is to say a GPIO (General Purpose Input Output) and a pin number. Each GPIO is related to some registers with given addresses. With the right values written in the right registers, we can put a pin in the right mode and the right state.
+
+To reach our goal, we need to do a few things :
+
+1. Find the pin the `built-in LED` is attached to
+2. Activate the `GPIO`
+3. Turn the built-in LED pin to `OUTPUT mode`
+4. `Set` the built-in LED pin
+5. Add some `delay`
+6. `Reset` the built-in LED pin
+7. Add some `delay`
+8. Encapsulate the four last actions in an `inifite loop`
+
+Are you ready ! Let's do it !
+
+### Find the built-in LED pin
+
+The first thing we need to do is to find the pin the built-in LED is attached to. Open the Nucleo STM32 user manual. Find the mention of the `USER LED` with the corresponding pin :
+
+<!-- Add photo of the USER LED --> 
+
+As you can see above, the LED we are looking for is `LD2 USER` connected to PA5, that is to say GPIOA (port A), pin 5.
+
+### Active the GPIO
+
+In order to activate GPIOA, you need to enable GPIOA from the RCC (Reset and Clock Controller).
+
+Switch to the STM32 reference manual and look for *Memory map and register boundary addresses* (2.2.2)
+
+<!-- Add 2.2.2. Memory map and register boundary addresses -->
+
+Scroll until you see the memory map and peripheral register boundary addresses table and look for the GPIOA line.
+
+<!-- Add memory map and peripheral register boundary addresses table -->
+
+As you can see, the GPIOA is related to the AHB2 bus.
+
+Write the enable value in the AHB2 register of the RCC **without touching others registers value** applying a OR mask
+
+```
+RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN ;
+```
+
+### Turn pin to OUTPUT mode
+
+Again, it is a story of register ! The register for GPIO Mode is named `MODER`.
+We need to reset the value of the pin 5 of the GPIOA and write the value of the `OUTPUT mode` without changing any other values in order not to affect other pins (using a not and operation followed with a or operation). We can find this value in the reference manual. Go to the *General-purpose I/Os (GPIO)* section, *GPIO registers* section, *GPIO port mode register (GPIOx_MODER)* (9.4.1).
+
+<!-- Add GPIO Moder image -->
+
+From this section we learn that `General purpose output mode` value is 01 (1).
+
+Now go back to the code. From the 'stm32g474xx.h' file, search for `MODER` defines. As we're looking for pin 5, we're interested in `GPIO_MODER_MODE5`.
+Let's first apply the mask to disable the previous mode of the pin and then set the output value(1) for the pin 5 (shifting this value to the corresponding position given by `GPIO_MODER_MODE5_Pos`) :
+
+```
+GPIOA->MODER &= ~GPIO_MODER_MODE5_Msk ;
+GPIOA->MODER |= 0x1 << GPIO_MODER_MODE5_Pos ;
+```
+
+### Set the built-in LED pin
+
+One simple way to change the output state of a pin is to use the ODR register. It's not the best way but it is ok for us.
+
+In 'stm32g474xx.h', search for `ODR` defines and scroll to `GPIO_ODR_OD5`. Apply a `OR` operation to the ODR register of the GPIOA :
+
+```
+GPIOA->ODR |= GPIO_ODR_OD5 ;
+```
+
+To reset the pin, we do the opposing operation (`AND NOT` operation) :
+
+```
+GPIOA->ODR &= ~GPIO_ODR_OD5 ;
+```
+
+### Adding a delay
+
+To add some delay between set and reset operations and have the blinky effect, we write the `spin` function :
+
+```
+static inline void spin(volatile uint32_t count)
+{
+  while (count--) asm("nop");
+}
+```
+
+this function simply run the nop assembler operation which does... nothing. But nothing for a clock cycle. Thus repeating the operation for a given number of clock cycle give you a delay. That's it !
+
+We finally merge everything together with an infinity loop (a while or for loop does the job) to get the following code gpioToggleLed function :
+
+```
+void gpioToggleLed()
+{
+	RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN ;
+	GPIOA->MODER &= ~GPIO_MODER_MODE5_Msk ;
+	GPIOA->MODER |= 0x1 << GPIO_MODER_MODE5_Pos ;
+
+	for (;;)
+	{
+		GPIOA->ODR |= GPIO_ODR_OD5 ;
+		spin(999999);
+		GPIOA->ODR &= ~GPIO_ODR_OD5 ;
+		spin(999999);
+  }
+}
+```
+
+Add this function to the 'main' or 'gpio' files and we're done ! Now you should have something similar to the current repository.
+
+# Final step : compile and flash
+
+Open your project folder containing the makefile in a terminal. 
+
+To compile the code, run `make`. A build folder will be created with all the objects and target files built. However you don't need to care about it.
+
+To flash the code, connect your STM32 to your computer and run `make flash`. 
+Congratulation ! The LED is blinking !
+
+To clean the folder (i.e. remove every built file), run `make clean`
+
+You can use the debugger running `make debug`
+
+# Bonus 1 - Understand the makefile
+
+Being prepared... Arrives soon...
+
+# Bonus 2 - My rules
 
 As I said, I created my own set of rules especially for the project tree derived from STM32CubeIDE. I divided my projects in a few parts, every part being a folder :
 
@@ -149,34 +347,4 @@ To better understand how I manage my projects, here some other generic rules I u
 
 ```
 
-It make it clearer for me and seperated these define from other defines
-
-With all these (useless ?) information, let's create this damn project !
-
-## Create the project
-
-Create where you want a folder with the name of your choice. Put inside the makefile, create a core folder and put somewhere inside the header, startup and linker files (in accordance with my rules if you want to follow them).
-
-To complete the project tree with the bare minimum, add both main.h file and main.c files inside the core folder.
-
-# Configuration and programming
-
-## Configure your linke script
-
-The first thing we need to do is to tell the linker the lenght of both the FLASH and the RAM memory. Indeed, every STM32 have the same address for both FLASH and RAM but the size may change.
-
-You can find FLASH and RAM length in the STM32 datasheet. In the contents, find Embedded Flash Memory and Embedded SRAM, points 3.4 and 3.5 :
-
-<!-- Add photo of the contents -->
-
-Then, go to each section to get the information
-
-<!-- Add photo of FLASH and RAM -->
-
-As you can see, the STM32G474RE has 512Kbytes of FLASH and 96Kbytes of SRAM (SRAM1 + SRAM2 = 80 + 16 = 96).
-
-*** Be careful, we are looking for SRAM, not CCM SRAM ***
-
-
-
-# Bonus - Understand the makefile
+It make it clearer for me and seperated these define from other defines.

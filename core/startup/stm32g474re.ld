@@ -1,7 +1,7 @@
 ENTRY(Reset_Handler)
 
 /* end of stack, 128K RAM */
-_estack = 0x20020000 ;
+_estack = ORIGIN(RAM) + LENGTH(RAM) ;
 
 MEMORY
 {
