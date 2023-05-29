@@ -26,6 +26,7 @@ Welcome to a simple and complete generic STM32 Bare Metal Programming Tutorial !
 		1. [Set the built-in LED pin](#set-the-built-in-led-pin)
 		1. [Adding a delay](#adding-a-delay)
 1. [Final step : compile and flash](#final-step--compile-and-flash)
+1. [What's next ?](#whats-next-)
 1. [Bonus 1 - Understand the makefile](#bonus-1---understand-the-makefile)
 1. [Bonus 2 - My rules](#bonus-2---my-rules)
 
@@ -33,7 +34,7 @@ Welcome to a simple and complete generic STM32 Bare Metal Programming Tutorial !
 
 # Descritpion
 
-STM32 are great electronics devices. Compared to Arduino cards, they are cheapper and way more powerful ! However, a STM32 can be harder to program and use the STM32CubeIDE can be really annoying, especially if we like free software and don't like IDe (like me).
+STM32 are great electronics devices. Compared to Arduino cards, they are cheapper and way more powerful ! However, a STM32 can be harder to program and use the STM32CubeIDE can be really annoying, especially if we like free software and don't like IDE (like me).
 
 Unfortunetaly, programming in Bare Metal (i.e. without IDE) is not very easy, that's why I decided to create a little tutorial to make it easier for beginner.
 
@@ -116,7 +117,7 @@ Then, the linker script (with .ld extension). You can find these 2 linker script
 
 Finally, I prepared a generic [makefile](#makefile) which will save our lives and make the journey way easier !
 
-But hold on. What is a makefile ? And what the hell is a compiler ?
+\# But hold on. What is a makefile ? And what the hell is a compiler ?
 
 When you program, you write your code in a language we, human (not all, but some) can understand, like C or C++. However, computers doesn't understand these languages and we need to translate the code for them. Guess what, that's exactly what compilers do.
 
@@ -150,7 +151,9 @@ extern "C" void SystemInit()
 }
 ```
 
-Why do we need to do this ? In the startup file, a SystemInit function is called and stands for the clock initialization function initially defined somewhere in a ST library. However, we don't use this library as the goal of bare metal programming is to implements things by ourselves. However we still need to define this function, even though it doesn't do anything.
+\# Why do we need to do this ? 
+
+In the startup file, a SystemInit function is called and stands for the clock initialization function initially defined somewhere in a ST library. However, we don't use this library as the goal of bare metal programming is to implements things by ourselves. However we still need to define this function, even though it doesn't do anything.
 
 # Configuration and programming
 
@@ -313,6 +316,18 @@ Congratulation ! The LED is blinking !
 To clean the folder (i.e. remove every built file), run `make clean`
 
 You can use the debugger running `make debug`
+
+I hope this tutorial helped you to begin with STM32 bare metal programming and that you're now ready for the future.
+
+# What's next ?
+
+Now that you have the basic setup to program in bare metal, feel free to dive into the STM32 documentations and program the different libraries you need to implement the different interfaces and features I discussed (GPIO, UART, interruptions, SPI, I2C...).
+
+\# OK, that's great, but it is C bare metal programming. What if I would like to take advantage of the C++ object-oriented notions ? What if I would like to use C++ libraries (like arduino ones), make them work with STM32 alongside my C projects ? Or the reverse case ?
+
+Here comes the best part of the makefile I've written. It make it all work together, no matter the configuration ! Don't trust me ? Simply try different configurations with the basic setup alternating between '.c' and '.cpp' extensions for source files and '.h' and '.hpp' files for header files.
+
+Again, the aim of this tutorial is to make the easiest and most generic setup for STM32 bare metal programming. Now it's time to wish you the best for the future of you journey !
 
 # Bonus 1 - Understand the makefile
 
