@@ -17,7 +17,7 @@ STARTUP = $(shell find $(CORE_DIR) -name *.s)
 MCU_SPEC = cortex-m4
 FPU_SPEC = fpv4-sp-d16
 
-# Define include directories
+# Define include directories (directories containing .h and .hpp files)
 INC_DIRS = $(shell find $(CORE_DIR) $(DRIVERS_DIR) $(LIB_DIR) -type d -exec sh -c 'ls -1 "{}"/*.h > /dev/null 2>&1' \; -print)
 INC_DIRS += $(shell find $(CORE_DIR) $(DRIVERS_DIR) $(LIB_DIR) -type d -exec sh -c 'ls -1 "{}"/*.hpp > /dev/null 2>&1' \; -print)
 
@@ -60,6 +60,7 @@ CPPFLAGS += -ffunction-sections -fdata-sections
 CPPFLAGS += -fno-exceptions
 CPPFLAGS += -fno-rtti
 CPPFLAGS += -std=c++11
+CPPFLAGS += $(INC_DIRS_FLAG)
 
 # Linker directives.
 LSCRIPT = $(LD_SCRIPT)
@@ -113,11 +114,11 @@ $(BUILD_DIR)/%.o: %.s
 
 $(BUILD_DIR)/%.o: %.c
 	mkdir -p $(dir $@)
-	$(CPP) -c $(CPPFLAGS) $(INC_DIRS_FLAG) $< -o $@
+	$(CPP) -c $(CPPFLAGS) $< -o $@
 
 $(BUILD_DIR)/%.o: %.cpp
 	mkdir -p $(dir $@)
-	$(CPP) -c $(CPPFLAGS) $(INC_DIRS_FLAG) $< -o $@
+	$(CPP) -c $(CPPFLAGS) $< -o $@
 
 $(TARGET).elf: $(OBJS)
 	@mkdir -p $(dir $@)
@@ -134,7 +135,7 @@ fromscratch: clean $(TARGET).bin
 # Clean the project
 .PHONY: clean
 clean:
-	rm -rf $(BUILD_DIR)/*
+	rm -rf $(BUILD_DIR)
 
 # Enter debug mode using gdb
 .PHONY: debug

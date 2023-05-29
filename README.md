@@ -7,6 +7,7 @@ Welcome to a simple and complete generic STM32 Bare Metal Programming Tutorial !
 <!-- MarkdownTOC levels="1,2,3" autolink="true" style="ordered" -->
 
 1. [Descritpion](#descritpion)
+1. [Disclaimer, thanks and references](#disclaimer-thanks-and-references)
 1. [Why Programming In Bare Metal ?](#why-programming-in-bare-metal-)
 1. [Requirements](#requirements)
 	1. [Hardware requirements](#hardware-requirements)
@@ -36,7 +37,18 @@ Welcome to a simple and complete generic STM32 Bare Metal Programming Tutorial !
 
 STM32 are great electronics devices. Compared to Arduino cards, they are cheapper and way more powerful ! However, a STM32 can be harder to program and use the STM32CubeIDE can be really annoying, especially if we like free software and don't like IDE (like me).
 
-Unfortunetaly, programming in Bare Metal (i.e. without IDE) is not very easy, that's why I decided to create a little tutorial to make it easier for beginner.
+Unfortunetaly, programming in bare metal (i.e. without IDE) is not very easy, that's why I decided to create a little tutorial to make it easier for beginner !
+
+# Disclaimer, thanks and references
+
+I'm not an expert in STM32 neither in bare metal programming, just a simple enthousiast. Therefore I hope I will not say anything wrong in this tutorial. I consider myself a beginner who just like to learn some cool stuff and who like to share his work.
+
+Futhermore, nothing could be possible without the help of a good friend of mine. I would like to thank him for introducing me to STM32 cool stuff and bare metal programming ! If this tutorial helped you in a way or another, you can thank him too !
+
+Finally and of course I didn't make it to scratch. As I said, I had some help from a friend you went through this before me. Moreover, I started my journey and my understanding with a few tutorials (one my friend advised and one I found) :
+
+- [https://vivonomicon.com/2018/04/02/bare-metal-stm32-programming-part-1-hello-arm/](https://vivonomicon.com/2018/04/02/bare-metal-stm32-programming-part-1-hello-arm/)
+- [https://github.com/cpq/bare-metal-programming-guide](https://github.com/cpq/bare-metal-programming-guide)
 
 # Why Programming In Bare Metal ?
 
@@ -111,7 +123,7 @@ In addition with these header files, you need 2 more files. First, the startup f
 
 - Core/Startup/startup\_stm32XXXXXXXX.s (startup_stm32g474retx.s)
 
-Then, the linker script (with .ld extension). You can find these 2 linker script files for both the RAM and the FLASH from STM32CubeIDE (Drivers/STM32XXXXXXXX_FLASH.ld and Drivers/STM32XXXXXXXX_FLASH.ld). However, I advise you to use a unique file you can find [here](./core/startup/stm32g474re.ld). Simply rename this file to match your STM32. It is equivalent to both previous file. We just need to modify a few fields to make it work with each STM32, which is pretty nice !
+Then, the linker script (with .ld extension). You can find these 2 linker script files for both the RAM and the FLASH from STM32CubeIDE (Drivers/STM32XXXXXXXX_FLASH.ld and Drivers/STM32XXXXXXXX_FLASH.ld). However, I advise you to use a unique file you can find [here](./core/startup/stm32g474re.ld). Simply rename this file to match your STM32 (not obligatory but better to stay organized). It is equivalent to the two previous files. We just need to modify a few fields to make it work with each STM32, which is pretty nice !
 
 ### Makefile
 
