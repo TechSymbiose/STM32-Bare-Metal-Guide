@@ -119,11 +119,17 @@ File->New->STM32 Project->MCU/MPU Selector, search for the Commercial Part Numbe
 	- stm32XXxx.h (same, replaceX X by the serie, stm32g4xx.h for me)
 	- system\_stm32XXxx.h (system\_stm32g474xx.h)
 
+\# What are these files ? And why to we need them ?
+
+These files define everything related to the STM32 from a low level perspective such as registers. Of course you can simply read the documentation and implement everything by yourself. But trust me, you and I don't want to do it. It is very long, boring and useless. Just take a look at the thousands of line of code (I'm not kidding) and you will understand.
+
 In addition with these header files, you need 2 more files. First, the startup file with the '.s' extension :
 
 - Core/Startup/startup\_stm32XXXXXXXX.s (startup_stm32g474retx.s)
 
-Then, the linker script (with .ld extension). You can find these 2 linker script files for both the RAM and the FLASH from STM32CubeIDE (Drivers/STM32XXXXXXXX_FLASH.ld and Drivers/STM32XXXXXXXX_FLASH.ld). However, I advise you to use a unique file you can find [here](./core/startup/stm32g474re.ld). Simply rename this file to match your STM32 (not obligatory but better to stay organized). It is equivalent to the two previous files. We just need to modify a few fields to make it work with each STM32, which is pretty nice !
+This file contains some basic stuff to make the STM32 work such as interruptions.
+
+Then, the linker script (with .ld extension) which defines the memory (FLASH and RAM) addresses and length. You can find these 2 linker script files for both the RAM and the FLASH from STM32CubeIDE (Drivers/STM32XXXXXXXX_FLASH.ld and Drivers/STM32XXXXXXXX_FLASH.ld). However, I advise you to use a unique file you can find [here](./core/startup/stm32g474re.ld). Simply rename this file to match your STM32 (not obligatory but better to stay organized). It is equivalent to the two previous files. We just need to modify a few fields to make it work with each STM32, which is pretty nice !
 
 ### Makefile
 
@@ -162,6 +168,15 @@ extern "C" void SystemInit()
 {  
 }
 ```
+
+In gpio.c (or main.c if you don't want to use the gpio files), add the two following lines :
+
+```
+#define STM32G474xx // Define the STM32 used BEFORE INCLUDING THE LIBRARY
+#include "stm32g4xx.h" // Include the STM32 library
+```
+
+Including the *stm32g4xx.h* file allows the inclusion of all the other files which are needed and all the necessary defines. The `STM32G474xx` (or equivalent according to the STM32 you're using) definition give information to the header files about values that need to be defined.
 
 \# Why do we need to do this ? 
 
