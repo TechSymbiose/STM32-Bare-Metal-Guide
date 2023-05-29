@@ -331,8 +331,227 @@ Again, the aim of this tutorial is to make the easiest and most generic setup fo
 
 # Bonus 1 - Understand the makefile
 
-Being prepared... Arrives soon...
+Here we are... Don't worry, take a breathe, everything is fine ! Let's break the ice.
 
+First, we define the directories we use. The first 3 directories contain the code. The last one the built code. That makes sense.
+
+```
+# Define directories
+CORE_DIR = ./core
+DRIVERS_DIR = ./drivers
+LIB_DIR = ./lib
+BUILD_DIR = ./build
+```
+
+Then we define the target location which is directly in the build directory :
+
+```
+# Define target location
+TARGET = $(BUILD_DIR)/test
+```
+
+We also need to find both the linker script and the startup files. To do it, I simply use the shell *find* command which does the lob for me. I simply tell *find* the name (-name) of the files we're looking for (everything containing '.ld' and '.s').
+
+```
+# Define the linker script location
+LD_SCRIPT = $(shell find $(CORE_DIR) -name *.ld)
+
+# Define the startup file location
+STARTUP = $(shell find $(CORE_DIR) -name *.s)
+```
+
+Next, the chip architecture :
+
+```
+# Define the chip architecture
+MCU_SPEC = cortex-m4
+FPU_SPEC = fpv4-sp-d16
+```
+
+For the `MCU_SPEC`, you can find this information at the beginning of the STM32 datasheet :
+
+![MCU SPEC](./images/mcu_spec.png)
+
+As the compiler need to know where to find all the include files, we need to find them. I mean. We need the shell *find* command to find them. As they can be in *core*, *drivers* and *lib* directories, we add them all. For the rest of the command, I surrender, I asked ChatGPT (shame on me). I guess it searches all directories containing files with *.h* or *.hpp* extensions and remove the duplicates.
+
+```
+# Define include directories
+INC_DIRS = $(shell find $(CORE_DIR) $(DRIVERS_DIR) $(LIB_DIR) -type d -exec sh -c 'ls -1 "{}"/*.h > /dev/null 2>&1' \; -print)
+INC_DIRS += $(shell find $(CORE_DIR) $(DRIVERS_DIR) $(LIB_DIR) -type d -exec sh -c 'ls -1 "{}"/*.hpp > /dev/null 2>&1' \; -print)
+```
+
+We then add the `-I` option before each include directory to make the include flags for g++ (the compiler used to compile *c* and *cpp* files) :
+
+```
+# Define include flags
+INC_DIRS_FLAG = $(addprefix -I, $(INC_DIRS))
+```
+
+Next, we get every source file location :
+
+```
+# Define source files location
+C_SRCS = $(shell find $(CORE_DIR) $(DRIVERS_DIR) $(LIB_DIR) -name '*.c')
+CPP_SRCS = $(shell find $(CORE_DIR) $(DRIVERS_DIR) $(LIB_DIR) -name '*.cpp')
+```
+
+Here are all the tools/compiler we need (and some we don't I admit), all located in the */usr* directory in the system :
+
+```
+# Toolchain definitions (ARM bare metal defaults)
+TOOLCHAIN = /usr
+CPP = $(TOOLCHAIN)/bin/arm-none-eabi-g++
+AS  = $(TOOLCHAIN)/bin/arm-none-eabi-gcc
+LD  = $(TOOLCHAIN)/bin/arm-none-eabi-ld
+OC  = $(TOOLCHAIN)/bin/arm-none-eabi-objcopy
+OD  = $(TOOLCHAIN)/bin/arm-none-eabi-objdump
+OS  = $(TOOLCHAIN)/bin/arm-none-eabi-size
+```
+
+Now it's time to build all the flags the compilers need. You can do like I did and don't think about it, just add it all. A little disclaimer for the commented `-nostdlib` option. Uncomment this line only if needed. By default, g++ compile the target with the standard library, and it's fine. 
+
+```
+# Assembly directives.
+ASFLAGS += -c
+ASFLAGS += -Og
+ASFLAGS += -mcpu=$(MCU_SPEC)
+ASFLAGS += -mthumb
+ASFLAGS += -Wall
+ASFLAGS += -fmessage-length=0
+
+# C and C++ compilation directives
+CPPFLAGS += -mcpu=$(MCU_SPEC)
+CPPFLAGS += -mthumb
+CPPFLAGS += -march=armv7e-m
+CPPFLAGS += -mfloat-abi=hard
+CPPFLAGS += -mfpu=$(FPU_SPEC)
+CPPFLAGS += -Wall
+CPPFLAGS += -g3
+CPPFLAGS += -Og
+#CPPFLAGS += -fno-inline
+CPPFLAGS += -fmessage-length=0 -fno-common
+CPPFLAGS += -ffunction-sections -fdata-sections
+CPPFLAGS += -fno-exceptions
+CPPFLAGS += -fno-rtti
+CPPFLAGS += -std=c++11
+
+# Linker directives.
+LSCRIPT = $(LD_SCRIPT)
+LFLAGS += -mcpu=$(MCU_SPEC)
+LFLAGS += -mthumb
+LFLAGS += -mfloat-abi=hard
+LFLAGS += -mfpu=$(FPU_SPEC)
+LFLAGS += -Wall
+LFLAGS += -march=armv7e-m
+LFLAGS += --static
+LFLAGS += --specs=nosys.specs
+#LFLAGS += -nostdlib # Uncomment in order NOT to include the standard library
+LFLAGS += -Wl,-Map=$(TARGET).map
+LFLAGS += -lgcc
+LFLAGS += -Wl,--gc-sections
+LFLAGS += -Wl,--print-memory-usage
+LFLAGS += -Wl,-L./ld
+LFLAGS += -lc
+LFLAGS += -nostartfiles
+LFLAGS += -T$(LSCRIPT)
+```
+
+Then, we define every objects. To do this, we make sure the sources are defined (checking if the variables are not empty). Each object file is stored in the *build* directory and the path is preserved. 
+
+```
+# If there is at least one startup file, define the correponding object(s) location
+ifneq ($(STARTUP),)
+	OBJS += $(addprefix $(BUILD_DIR)/, $(STARTUP:.s=.o))
+endif
+
+# If there is at least one C file, define the correponding object(s) location
+ifneq ($(C_SRCS),)
+	OBJS += $(addprefix $(BUILD_DIR)/, $(C_SRCS:.c=.o))
+endif
+
+# If there is at least one C++ file, define the correponding object(s) location
+ifneq ($(CPP_SRCS),)
+	OBJS += $(addprefix $(BUILD_DIR)/, $(CPP_SRCS:.cpp=.o))
+endif
+```
+
+We define the *rm* command according to the OS we use. I'm not sure it's useful as we know we use Linux.
+
+```
+# Define the rm command according to the OS
+ifeq ($(OS),Windows_NT)
+  RM = cmd /C del /Q /F
+else
+  RM = rm -f
+endif
+```
+
+And finally here are every commands we can run.
+
+```
+# Entry point of the makefile
+.PHONY: all
+all: $(TARGET).bin 
+
+$(BUILD_DIR)/%.o: %.s
+	@mkdir -p $(dir $@)
+	$(AS) -x assembler-with-cpp $(ASFLAGS) $< -o $@
+
+$(BUILD_DIR)/%.o: %.c
+	mkdir -p $(dir $@)
+	$(CPP) -c $(CPPFLAGS) $(INC_DIRS_FLAG) $< -o $@
+
+$(BUILD_DIR)/%.o: %.cpp
+	mkdir -p $(dir $@)
+	$(CPP) -c $(CPPFLAGS) $(INC_DIRS_FLAG) $< -o $@
+
+$(TARGET).elf: $(OBJS)
+	@mkdir -p $(dir $@)
+	$(CPP) $^ $(LFLAGS) -o $@
+
+$(TARGET).bin: $(TARGET).elf
+	@mkdir -p $(dir $@)
+	$(OC) -S -O binary $< $@
+
+# Clean the project and rebuild it
+.PHONY: fromscratch
+fromscratch: clean $(TARGET).bin
+
+# Clean the project
+.PHONY: clean
+clean:
+	rm -rf $(BUILD_DIR)/*
+
+# Enter debug mode using gdb
+.PHONY: debug
+debug:
+	st-util&
+	arm-none-eabi-gdb -ex="target extended-remote : 4242" $(TARGET).elf
+	pidof ../tools/st-util | xargs kill
+
+# Flash the code into the board
+.PHONY: flash
+flash:
+	st-flash --reset write $(TARGET).bin 0x08000000
+
+```
+
+First thing we need to know is that `make` is equivalent to `make all`, that is to say make all the stuff we need. So here what happens when we run `make`. :
+
+- all needs target.bin
+- target.bin needs target.elf
+- target.elf needs all the objects to be built
+- The path to the object file (in the build directory) is made and each object (from C source file, C++ source file or startup file) is built with the corresponding compiler and flags.
+- Once all objects are built, target.elf can be built.
+- Once target.elf is built, target.bin can be built
+
+There are a few other commands we can run :
+
+`make fromscratch` clean the project and rebuild everything. It is useful when we bring some changes to a header file used by a source file for instance.
+`make clean` clean the project (duh !), i.e. delete the build directory.
+`make debug` allows us to use gdb which is a debugger, an amazing tool to know exactly what is done, step by step, inside the STM32. I advise you to do some research about it, it can save you life !
+`make flash` flash the code inside the STM32.
+ 
 # Bonus 2 - My rules
 
 As I said, I created my own set of rules especially for the project tree derived from STM32CubeIDE. I divided my projects in a few parts, every part being a folder :

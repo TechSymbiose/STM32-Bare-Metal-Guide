@@ -1,9 +1,8 @@
 # Define directories
 CORE_DIR = ./core
 DRIVERS_DIR = ./drivers
-BUILD_DIR = ./build
-STARLINK_DIR = ./startup
 LIB_DIR = ./lib
+BUILD_DIR = ./build
 
 # Define target location
 TARGET = $(BUILD_DIR)/test
