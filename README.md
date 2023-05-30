@@ -135,7 +135,7 @@ Then, the linker script (with *.ld* extension) which defines the memory (FLASH a
 
 ### Makefile
 
-Finally, I prepared a generic [makefile](#makefile) which will save our lives and make the journey way easier !
+Finally, I prepared a generic [makefile](./makefile) which will save our lives and make the journey way easier !
 
 \# But hold on. What is a makefile ? And what the hell is a compiler ?
 
