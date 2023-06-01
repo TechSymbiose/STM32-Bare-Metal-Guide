@@ -79,6 +79,12 @@ sudo apt-get install gcc-arm-none-eabi
 sudo apt-get install gdb-arm-none-eabi
 ```
 
+- lstdc++ library :
+
+```
+sudo apt install libstc++-arm-none-eabi-newlib
+```
+
 - stlink-tools - open your terminal and run the following command :
 
 ```
