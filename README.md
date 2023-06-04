@@ -417,7 +417,26 @@ For the `MCU_SPEC`, you can find this information at the beginning of the STM32 
 
 ![MCU SPEC](./images/mcu_spec.png)
 
-As the compiler need to know where to find all the include files, we need to find them. I mean. We need the shell `find` command to find them. As they can be in *core*, *drivers* and *lib* directories, we add them all. For the rest of the command I surrender, I asked ChatGPT (shame on me). I guess it searches all directories containing files with '.h' or '.hpp' extensions and remove the duplicates.
+As the compiler need to know where to find all the include files, we need to find them. I mean. We need the shell `find` command to find them. As they can be in *core*, *drivers* and *lib* directories, we add each existing directory. That way, if we don't use one directory, we don't give it to the `find` command :
+
+```
+# Add the 'core' directory to the directories where to search for the include directories 
+ifneq (,$(wildcard $(CORE_DIR)))
+	DIRS += $(CORE_DIR)
+endif
+
+# If there is a 'drivers' directory, add it to the directories to search for the include directories
+ifneq (,$(wildcard $(DRIVERS_DIR)))
+    DIRS += $(DRIVERS_DIR)
+endif
+
+# If there is a 'lib' directory, add it to the directories to search for the include directories
+ifneq (,$(wildcard $(LIB_DIR)))
+    DIRS += $(LIB_DIR)
+endif
+```
+
+ For the rest of the command I surrender, I asked ChatGPT (shame on me). I guess it searches all directories containing files with '.h' or '.hpp' extensions and remove the duplicates.
 
 ```
 # Define include directories

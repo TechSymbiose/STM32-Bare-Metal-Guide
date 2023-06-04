@@ -18,7 +18,9 @@ MCU_SPEC = cortex-m4
 FPU_SPEC = fpv4-sp-d16
 
 # Add the 'core' directory to the directories where to search for the include directories 
-DIRS += $(CORE_DIR)
+ifneq (,$(wildcard $(CORE_DIR)))
+	DIRS += $(CORE_DIR)
+endif
 
 # If there is a 'drivers' directory, add it to the directories to search for the include directories
 ifneq (,$(wildcard $(DRIVERS_DIR)))
