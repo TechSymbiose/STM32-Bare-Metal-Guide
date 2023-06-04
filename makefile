@@ -17,9 +17,22 @@ STARTUP = $(shell find $(CORE_DIR) -name *.s)
 MCU_SPEC = cortex-m4
 FPU_SPEC = fpv4-sp-d16
 
+# Add the 'core' directory to the directories where to search for the include directories 
+DIRS += $(CORE_DIR)
+
+# If there is a 'drivers' directory, add it to the directories to search for the include directories
+ifneq (,$(wildcard $(DRIVERS_DIR)))
+    DIRS += $(DRIVERS_DIR)
+endif
+
+# If there is a 'lib' directory, add it to the directories to search for the include directories
+ifneq (,$(wildcard $(LIB_DIR)))
+    DIRS += $(LIB_DIR)
+endif
+
 # Define include directories (directories containing .h and .hpp files)
-INC_DIRS = $(shell find $(CORE_DIR) $(DRIVERS_DIR) $(LIB_DIR) -type d -exec sh -c 'ls -1 "{}"/*.h > /dev/null 2>&1' \; -print)
-INC_DIRS += $(shell find $(CORE_DIR) $(DRIVERS_DIR) $(LIB_DIR) -type d -exec sh -c 'ls -1 "{}"/*.hpp > /dev/null 2>&1' \; -print)
+INC_DIRS = $(shell find $(DIRS) -type d -exec sh -c 'ls -1 "{}"/*.h > /dev/null 2>&1' \; -print)
+INC_DIRS += $(shell find $(DIRS) -type d -exec sh -c 'ls -1 "{}"/*.hpp > /dev/null 2>&1' \; -print)
 
 # Define include flags
 INC_DIRS_FLAG = $(addprefix -I, $(INC_DIRS))
