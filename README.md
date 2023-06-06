@@ -374,6 +374,34 @@ Here comes the best part of the makefile I've written. It make it all work toget
 
 Again, the aim of this guide is to make the easiest and the most generic setup for STM32 bare metal programming. Now it's time to wish you the best for the future of you journey !
 
+## Note
+
+For those who might be interested, I'm currently working on an implementation of some periphericals for the STM32G474RE, available [here](https://gitlab.com/TechSymbiose/stm32-bare-metal).
+
+I started with a simple first implementation of GPIO drivers in C language then moved to C++. You can clone this project running the following command in a terminal :
+
+`
+git clone https://gitlab.com/TechSymbiose/stm32-bare-metal.git
+`
+
+If you are interested in the basic C implementation of GPIO drivers, go to the `gpio` branch :
+
+`
+git checkout gpio
+`
+
+To have the equivalent of this library in C++, move to the `newgpio` branch :
+
+`
+git checkout gpio
+`
+
+To go back to the most updated version of the drivers, go back to the `main` branch :
+
+`
+git checkout main
+`
+
 # Bonus 1 - Understand the makefile
 
 Here we are... Don't worry, take a breathe, everything is fine ! Let's break the ice.
