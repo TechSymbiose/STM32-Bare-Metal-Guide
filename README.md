@@ -4,7 +4,7 @@ Welcome to a simple and complete generic STM32 Bare Metal Programming Guide !
 
 # Contents
 
-<!-- MarkdownTOC levels="1" autolink="true" style="ordered" markdown_previous="github"-->
+<!-- MarkdownTOC levels="1,2,3" autolink="true" style="ordered" markdown_preview="github" -->
 
 1. [Descritpion](#descritpion)
 1. [Disclaimer, thanks and references](#disclaimer-thanks-and-references)
@@ -23,15 +23,18 @@ Welcome to a simple and complete generic STM32 Bare Metal Programming Guide !
 	1. [A little programming](#a-little-programming)
 		1. [Find the built-in LED pin](#find-the-built-in-led-pin)
 		1. [Active the GPIO](#active-the-gpio)
-		1. [Turn pin to OUTPUT mode](#turn-pin-to-output-mode)
+		1. [Set pin to OUTPUT mode](#set-pin-to-output-mode)
 		1. [Set the built-in LED pin](#set-the-built-in-led-pin)
 		1. [Adding a delay](#adding-a-delay)
+		1. [Making an infinite loop](#making-an-infinite-loop)
 1. [Final step : compile and flash](#final-step--compile-and-flash)
 1. [What's next ?](#whats-next-)
+	1. [Note](#note)
 1. [Bonus 1 - Understand the makefile](#bonus-1---understand-the-makefile)
 1. [Bonus 2 - My rules](#bonus-2---my-rules)
 
 <!-- /MarkdownTOC -->
+
 
 # Descritpion
 
